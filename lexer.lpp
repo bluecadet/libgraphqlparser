@@ -26,6 +26,7 @@ static void escape(char c, char *buf);
 
 %option bison-bridge bison-locations
 %option noyywrap batch noinput nounput
+%option never-interactive
 %option reentrant
 %option extra-type="struct LexerExtra *"
 

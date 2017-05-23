@@ -7,6 +7,10 @@ INCLUDE(version)
 
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11")
 
+IF(WIN32)
+  ADD_DEFINITIONS(-DYY_NO_UNISTD_H)
+ENDIF()
+
 FIND_PACKAGE(PythonInterp 2 REQUIRED)
 IF (NOT PYTHON_VERSION_MAJOR EQUAL 2)
   MESSAGE(FATAL_ERROR "Python 2 is required.")
@@ -31,7 +35,7 @@ FILE(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/c)
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR})
 
-ADD_LIBRARY(graphqlparser SHARED
+ADD_LIBRARY(graphqlparser STATIC
   JsonVisitor.cpp
   ${CMAKE_CURRENT_BINARY_DIR}/Ast.h
   ${CMAKE_CURRENT_BINARY_DIR}/Ast.cpp
@@ -104,8 +108,17 @@ INSTALL(FILES
   stack.hh
   syntaxdefs.h
   DESTINATION include/graphqlparser)
-INSTALL(TARGETS graphqlparser
-  LIBRARY DESTINATION lib)
+
+# Common Cmake MSVC TARGET workaround https://stackoverflow.com/a/37729574
+if(WIN32)
+  install(TARGETS graphqlparser
+    ARCHIVE DESTINATION lib
+    RUNTIME DESTINATION lib)
+else()
+  INSTALL(TARGETS graphqlparser
+    LIBRARY DESTINATION lib)
+endif()
+
 
 if (UNIX)
   # generate pkgconfig file
